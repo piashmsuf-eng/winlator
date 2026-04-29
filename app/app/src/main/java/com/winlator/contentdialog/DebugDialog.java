@@ -8,6 +8,10 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
+
 import com.winlator.R;
 import com.winlator.core.AppUtils;
 import com.winlator.core.Callback;
@@ -24,6 +28,17 @@ public class DebugDialog extends ContentDialog implements Callback<String> {
         setTitle(context.getString(R.string.logs));
         logView = findViewById(R.id.LogView);
         logView.getLayoutParams().width = (int)UnitUtils.dpToPx(UnitUtils.pxToDp(AppUtils.getScreenWidth()) * 0.7f);
+
+        EditText etFilter = findViewById(R.id.ETLogFilter);
+        if (etFilter != null) {
+            etFilter.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    logView.setFilter(s == null ? "" : s.toString());
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
+        }
 
         findViewById(R.id.BTCancel).setVisibility(View.GONE);
 

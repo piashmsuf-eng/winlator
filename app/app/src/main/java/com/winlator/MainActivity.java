@@ -87,6 +87,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 showFragment(new ContainerFileManagerFragment(containerId, startPath));
             }
         }
+
+        try {
+            String currentVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            com.winlator.core.UpdateChecker.maybeCheck(this, currentVersion);
+        } catch (Throwable ignored) {
+            // never break app launch over an update check
+        }
     }
 
     @Override

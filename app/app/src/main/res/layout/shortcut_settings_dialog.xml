@@ -360,6 +360,36 @@
                         android:layout_height="wrap_content"
                         android:text="@string/force_fullscreen"
                         android:layout_marginTop="4dp" />
+
+                    <CheckBox
+                        android:id="@+id/CBDxvkHud"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dxvk_hud"
+                        android:layout_marginTop="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/max_fps" />
+
+                        <EditText
+                            android:id="@+id/ETMaxFps"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:gravity="end"
+                            android:hint="0" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView

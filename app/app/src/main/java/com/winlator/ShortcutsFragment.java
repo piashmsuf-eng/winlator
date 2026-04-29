@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
+    private String searchQuery = "";
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,14 +46,30 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
 
         Shortcut selectedFolder = !folderStack.isEmpty() ? folderStack.peek() : null;
         ArrayList<Shortcut> shortcuts = manager.loadShortcuts(selectedFolder);
-        recyclerView.setAdapter(new ShortcutsAdapter(shortcuts));
-        emptyTextView.setVisibility(shortcuts.isEmpty() ? View.VISIBLE : View.GONE);
+        ArrayList<Shortcut> visible = new ArrayList<>();
+        String q = searchQuery == null ? "" : searchQuery.trim().toLowerCase(java.util.Locale.US);
+        for (Shortcut s : shortcuts) {
+            if (q.isEmpty() || s.name.toLowerCase(java.util.Locale.US).contains(q)) visible.add(s);
+        }
+        recyclerView.setAdapter(new ShortcutsAdapter(visible));
+        emptyTextView.setVisibility(visible.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.shortcuts_menu, menu);
         refreshViewStyleMenuItem(menu.findItem(R.id.menu_item_view_style));
+        MenuItem search = menu.findItem(R.id.menu_item_search);
+        if (search != null) {
+            androidx.appcompat.widget.SearchView sv = (androidx.appcompat.widget.SearchView) search.getActionView();
+            if (sv != null) {
+                sv.setQueryHint(getString(R.string.search));
+                sv.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+                    @Override public boolean onQueryTextSubmit(String query) { searchQuery = query; refreshContent(); return true; }
+                    @Override public boolean onQueryTextChange(String newText) { searchQuery = newText; refreshContent(); return true; }
+                });
+            }
+        }
     }
 
     private void createFolder() {

@@ -77,6 +77,12 @@ public class ShortcutSettingsDialog extends ContentDialog {
         final CheckBox cbForceFullscreen = findViewById(R.id.CBForceFullscreen);
         cbForceFullscreen.setChecked(shortcut.getExtra("forceFullscreen", "0").equals("1"));
 
+        final CheckBox cbDxvkHud = findViewById(R.id.CBDxvkHud);
+        cbDxvkHud.setChecked(shortcut.getExtra("dxvkHud", "0").equals("1"));
+
+        final EditText etMaxFps = findViewById(R.id.ETMaxFps);
+        etMaxFps.setText(shortcut.getExtra("maxFps", ""));
+
         final Spinner sBox64Preset = findViewById(R.id.SBox64Preset);
         Box64PresetManager.loadSpinner(sBox64Preset, shortcut.getExtra("box64Preset", shortcut.container.getBox64Preset()));
 
@@ -130,6 +136,14 @@ public class ShortcutSettingsDialog extends ContentDialog {
                 shortcut.putExtra("audioDriver", !audioDriver.equals(shortcut.container.getAudioDriver())? audioDriver : null);
                 shortcut.putExtra("audioDriverConfig", !audioDriverConfig.equals(shortcut.container.getAudioDriverConfig()) ? audioDriverConfig : null);
                 shortcut.putExtra("forceFullscreen", cbForceFullscreen.isChecked() ? "1" : null);
+                shortcut.putExtra("dxvkHud", cbDxvkHud.isChecked() ? "1" : null);
+
+                String maxFpsRaw = etMaxFps.getText().toString().trim();
+                int maxFps = 0;
+                try { maxFps = maxFpsRaw.isEmpty() ? 0 : Integer.parseInt(maxFpsRaw); } catch (NumberFormatException ignored) {}
+                if (maxFps < 0) maxFps = 0;
+                if (maxFps > 999) maxFps = 999;
+                shortcut.putExtra("maxFps", maxFps > 0 ? String.valueOf(maxFps) : null);
 
                 String wincomponents = ContainerDetailFragment.getWinComponents(getContentView());
                 shortcut.putExtra("wincomponents", !wincomponents.equals(shortcut.container.getWinComponents()) ? wincomponents : null);

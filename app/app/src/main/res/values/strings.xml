@@ -176,6 +176,15 @@
     <string name="container_was_cloned">Container was cloned successfully</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="crash_dialog_title">Winlator crashed</string>
+    <string name="dynamic_colors">Dynamic Colors (Material You)</string>
+    <string name="check_for_updates">Check for updates on launch</string>
+    <string name="update_available_title">Winlator update available</string>
+    <string name="update_available_message">Version %1$s is now available. Open the GitHub releases page to download?</string>
+    <string name="open">Open</string>
+    <string name="search">Search</string>
+    <string name="max_fps">Max FPS (0 = unlimited)</string>
+    <string name="dxvk_hud">DXVK HUD</string>
+    <string name="dxvk_hud_help">FPS, frametimes and GPU load overlay rendered by DXVK.</string>
     <string name="preset">Preset</string>
     <string name="you_cannot_remove_this_preset">You cannot remove this preset</string>
     <string name="you_cannot_remove_this_component_version">You cannot remove this component version</string>
