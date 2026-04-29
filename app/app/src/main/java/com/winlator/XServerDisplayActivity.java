@@ -512,6 +512,22 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             if (shortcut != null) envVars.putAll(shortcut.getExtra("envVars"));
             if (!envVars.has("WINEESYNC")) envVars.put("WINEESYNC", "1");
 
+            // Per-shortcut DXVK HUD toggle (Settings -> shortcut -> DXVK HUD).
+            if (shortcut != null && shortcut.getExtra("dxvkHud", "0").equals("1")) {
+                envVars.put("DXVK_HUD", "fps,frametimes,gpuload,memory,version");
+            }
+
+            // Per-shortcut max FPS cap. Wine respects DXGI_FRAME_LATENCY/DXVK config; the
+            // simplest portable cap is dxvk's frameRate config + DRI_PRIME refresh sync.
+            if (shortcut != null) {
+                String maxFps = shortcut.getExtra("maxFps");
+                if (maxFps != null && !maxFps.isEmpty() && !maxFps.equals("0")) {
+                    envVars.put("DXVK_FRAME_RATE", maxFps);
+                    // VKD3D-Proton uses a different env var.
+                    envVars.put("VKD3D_FRAME_RATE", maxFps);
+                }
+            }
+
             guestProgramLauncherComponent.setBox64Preset(shortcut != null ? shortcut.getExtra("box64Preset", container.getBox64Preset()) : container.getBox64Preset());
         }
 

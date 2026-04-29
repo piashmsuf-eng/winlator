@@ -34,6 +34,9 @@ import java.util.ArrayList;
 public class LogView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final ArrayList<String> lines = new ArrayList<>();
+    /** When non-empty, only lines containing this substring (case-insensitive) are drawn. */
+    private String filter = "";
+    private final ArrayList<String> visibleLines = new ArrayList<>();
     private final float rowHeight = UnitUtils.dpToPx(30);
     private final float defaultTextSize = UnitUtils.dpToPx(16);
     private final float minScrollThumbSize = UnitUtils.dpToPx(6);
@@ -97,7 +100,7 @@ public class LogView extends View {
             paint.setStyle(Paint.Style.FILL);
             Context context = getContext();
 
-            if (lines.isEmpty()) {
+            if (visibleLines.isEmpty()) {
                 paint.setTextSize(UnitUtils.dpToPx(20));
                 paint.setColor(AppUtils.getThemeColor(context, R.attr.colorSecondaryText));
                 String text = getContext().getString(R.string.no_items_to_display);
@@ -115,7 +118,7 @@ public class LogView extends View {
             int colorSecondarySurface = AppUtils.getThemeColor(context, R.attr.colorSecondarySurface);
             int colorPrimaryText = AppUtils.getThemeColor(context, R.attr.colorPrimaryText);
 
-            for (int i = 0, count = lines.size(); i < count; i++) {
+            for (int i = 0, count = visibleLines.size(); i < count; i++) {
                 if ((rowY + rowHeight) < 0 || rowY >= height) {
                     rowY += rowHeight;
                     continue;
@@ -126,7 +129,7 @@ public class LogView extends View {
 
                 paint.setColor(colorPrimaryText);
                 float centerY = (rowY - paint.ascent()) + (rowHeight - textHeight) * 0.5f;
-                canvas.drawText(lines.get(i), -scrollPosition.x, centerY, paint);
+                canvas.drawText(visibleLines.get(i), -scrollPosition.x, centerY, paint);
                 rowY += rowHeight;
             }
 
@@ -190,17 +193,38 @@ public class LogView extends View {
 
         float maxWidth = 0;
         paint.setTextSize(defaultTextSize);
-        for (int i = 0, count = lines.size(); i < count; i++) maxWidth = Math.max(paint.measureText(lines.get(i)), maxWidth);
+        for (int i = 0, count = visibleLines.size(); i < count; i++) maxWidth = Math.max(paint.measureText(visibleLines.get(i)), maxWidth);
         scrollSize.x = Math.max(maxWidth, width);
-        scrollSize.y = Math.max(rowHeight * lines.size(), height);
+        scrollSize.y = Math.max(rowHeight * visibleLines.size(), height);
         scrollPosition.set(0, getScrollMaxTop());
     }
 
     public void clear() {
         synchronized (lock) {
             lines.clear();
+            visibleLines.clear();
         }
         postInvalidate();
+    }
+
+    public void setFilter(String filter) {
+        synchronized (lock) {
+            this.filter = filter == null ? "" : filter.toLowerCase(java.util.Locale.US).trim();
+            rebuildVisible();
+            computeScrollSize();
+        }
+        postInvalidate();
+    }
+
+    private void rebuildVisible() {
+        visibleLines.clear();
+        if (filter.isEmpty()) {
+            visibleLines.addAll(lines);
+        } else {
+            for (String l : lines) {
+                if (l.toLowerCase(java.util.Locale.US).contains(filter)) visibleLines.add(l);
+            }
+        }
     }
 
     public void append(String line) {
@@ -209,6 +233,9 @@ public class LogView extends View {
             if (content.isEmpty()) return;
             String logLine = "["+DateFormat.format("HH:mm:ss", System.currentTimeMillis())+"]  "+content;
             lines.add(logLine);
+            if (filter.isEmpty() || logLine.toLowerCase(java.util.Locale.US).contains(filter)) {
+                visibleLines.add(logLine);
+            }
 
             if (printStream != null) {
                 printStream.append(logLine+"\n");
