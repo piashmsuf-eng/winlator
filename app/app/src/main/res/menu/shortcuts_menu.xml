@@ -20,4 +20,16 @@
         android:id="@+id/menu_item_view_style"
         android:title="@string/view_style"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_item_sort"
+        android:title="@string/sort"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/menu_item_sort_name"          android:title="@string/sort_by_name" />
+            <item android:id="@+id/menu_item_sort_last_played"   android:title="@string/sort_by_last_played" />
+            <item android:id="@+id/menu_item_sort_playtime"      android:title="@string/sort_by_playtime" />
+            <item android:id="@+id/menu_item_sort_launch_count"  android:title="@string/sort_by_launch_count" />
+        </menu>
+    </item>
 </menu>

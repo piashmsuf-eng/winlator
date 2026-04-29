@@ -97,6 +97,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (Throwable ignored) {
             // never break app launch over an update check
         }
+
+        if (!editInputControls && !preferences.getBoolean("onboarding_seen", false)) {
+            findViewById(android.R.id.content).post(this::showOnboarding);
+        }
+    }
+
+    private void showOnboarding() {
+        if (isFinishing()) return;
+        com.winlator.contentdialog.ContentDialog dialog = new com.winlator.contentdialog.ContentDialog(this, R.layout.onboarding_dialog);
+        dialog.setTitle(R.string.welcome_title);
+        dialog.findViewById(R.id.BTConfirm).setVisibility(android.view.View.GONE);
+        dialog.findViewById(R.id.BTCancel).setVisibility(android.view.View.GONE);
+        android.widget.Button btOk = dialog.findViewById(R.id.BTOnboardingOk);
+        if (btOk != null) btOk.setOnClickListener((v) -> {
+            preferences.edit().putBoolean("onboarding_seen", true).apply();
+            dialog.dismiss();
+        });
+        dialog.show();
     }
 
     @Override

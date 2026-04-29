@@ -20,6 +20,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.winlator.container.Shortcut;
 import com.winlator.contentdialog.ContentDialog;
 import com.winlator.contentdialog.CreateFolderDialog;
@@ -33,11 +34,29 @@ import java.util.List;
 
 public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
     private String searchQuery = "";
+    private FloatingActionButton lastPlayedFab;
+    private Shortcut lastPlayedShortcut;
+
+    public enum SortMode { NAME, LAST_PLAYED, PLAYTIME, LAUNCH_COUNT }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewStyle = ViewStyle.valueOf(preferences.getString("shortcuts_view_style", "GRID"));
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        if (root != null) {
+            lastPlayedFab = root.findViewById(R.id.BTLastPlayed);
+            if (lastPlayedFab != null) {
+                lastPlayedFab.setOnClickListener((v) -> {
+                    if (lastPlayedShortcut != null) launchShortcut(lastPlayedShortcut);
+                });
+            }
+        }
+        return root;
     }
 
     @Override
@@ -51,8 +70,60 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
         for (Shortcut s : shortcuts) {
             if (q.isEmpty() || s.name.toLowerCase(java.util.Locale.US).contains(q)) visible.add(s);
         }
+
+        SortMode sortMode = SortMode.NAME;
+        try { sortMode = SortMode.valueOf(preferences.getString("shortcuts_sort_mode", "NAME")); }
+        catch (IllegalArgumentException ignored) {}
+        applySort(visible, sortMode);
+
+        lastPlayedShortcut = findLastPlayed(shortcuts);
+        if (lastPlayedFab != null) {
+            boolean show = lastPlayedShortcut != null && folderStack.isEmpty();
+            lastPlayedFab.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+
         recyclerView.setAdapter(new ShortcutsAdapter(visible));
         emptyTextView.setVisibility(visible.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private static void applySort(ArrayList<Shortcut> list, SortMode mode) {
+        list.sort((a, b) -> {
+            int dirCmp = Boolean.compare(b.file.isDirectory(), a.file.isDirectory());
+            if (dirCmp != 0) return dirCmp;
+            int favCmp = Boolean.compare(isFavorite(b), isFavorite(a));
+            if (favCmp != 0) return favCmp;
+            switch (mode) {
+                case LAST_PLAYED:   return Long.compare(b.getLastPlayed(), a.getLastPlayed());
+                case PLAYTIME:      return Long.compare(b.getTotalPlaytimeMs(), a.getTotalPlaytimeMs());
+                case LAUNCH_COUNT:  return Long.compare(b.getLaunchCount(), a.getLaunchCount());
+                case NAME: default: return a.name.compareToIgnoreCase(b.name);
+            }
+        });
+    }
+
+    private static boolean isFavorite(Shortcut s) {
+        if (s == null || s.file == null || s.file.isDirectory()) return false;
+        return "1".equals(s.getExtra("favorite", "0"));
+    }
+
+    private static Shortcut findLastPlayed(List<Shortcut> shortcuts) {
+        Shortcut best = null;
+        long bestTs = 0;
+        for (Shortcut s : shortcuts) {
+            if (s.file.isDirectory()) continue;
+            long ts = s.getLastPlayed();
+            if (ts > bestTs) { bestTs = ts; best = s; }
+        }
+        return best;
+    }
+
+    public void launchShortcut(Shortcut shortcut) {
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity == null || shortcut == null || shortcut.file.isDirectory()) return;
+        Intent intent = new Intent(activity, XServerDisplayActivity.class);
+        intent.putExtra("container_id", shortcut.container.id);
+        intent.putExtra("shortcut_path", shortcut.file.getPath());
+        activity.startActivity(intent);
     }
 
     @Override
@@ -113,9 +184,18 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
         pasteButton.setVisibility(View.VISIBLE);
     }
 
+    private void setSortMode(SortMode mode) {
+        preferences.edit().putString("shortcuts_sort_mode", mode.name()).apply();
+        refreshContent();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
+        if (itemId == R.id.menu_item_sort_name)         { setSortMode(SortMode.NAME); return true; }
+        if (itemId == R.id.menu_item_sort_last_played)  { setSortMode(SortMode.LAST_PLAYED); return true; }
+        if (itemId == R.id.menu_item_sort_playtime)     { setSortMode(SortMode.PLAYTIME); return true; }
+        if (itemId == R.id.menu_item_sort_launch_count) { setSortMode(SortMode.LAUNCH_COUNT); return true; }
         if (itemId == R.id.menu_item_view_style) {
             setViewStyle(viewStyle == ViewStyle.GRID ? ViewStyle.LIST : ViewStyle.GRID);
             preferences.edit().putString("shortcuts_view_style", viewStyle.name()).apply();
@@ -188,7 +268,8 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
             }
             else holder.imageView.setImageBitmap(item.icon);
 
-            holder.title.setText(item.name);
+            boolean fav = isFavorite(item);
+            holder.title.setText(fav ? "\u2605 " + item.name : item.name);
 
             String subtitle = item.container.getName();
             if (!item.file.isDirectory()) {
@@ -224,8 +305,16 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
 
             Menu menu = listItemMenu.getMenu();
             menu.findItem(R.id.menu_item_rename).setVisible(false);
-            menu.findItem(R.id.menu_item_add_favorite).setVisible(false);
             menu.findItem(R.id.menu_item_info).setVisible(false);
+            MenuItem favItem = menu.findItem(R.id.menu_item_add_favorite);
+            if (favItem != null) {
+                if (shortcut.file.isDirectory()) {
+                    favItem.setVisible(false);
+                } else {
+                    favItem.setVisible(true);
+                    favItem.setTitle(isFavorite(shortcut) ? R.string.unfavorite : R.string.favorite);
+                }
+            }
 
             listItemMenu.setOnMenuItemClickListener((menuItem) -> {
                 int itemId = menuItem.getItemId();
@@ -237,6 +326,11 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
                     case R.id.menu_item_copy:
                     case R.id.menu_item_cut:
                         instantiateClipboard(shortcut, itemId == R.id.menu_item_cut);
+                        break;
+                    case R.id.menu_item_add_favorite:
+                        shortcut.putExtra("favorite", isFavorite(shortcut) ? "0" : "1");
+                        shortcut.saveData();
+                        refreshContent();
                         break;
                     case R.id.menu_item_remove:
                         clearClipboard();
