@@ -70,6 +70,26 @@ public abstract class Box64PresetManager {
             envVars.put("BOX64_DYNAREC_NATIVEFLAGS", "1");
             envVars.put("BOX64_DYNAREC_WEAKBARRIER", "2");
         }
+        else if (id.equals(Box64Preset.REDMAGIC_8PG1)) {
+            // Tuned for Snapdragon 8+ Gen 1 / Adreno 730 (e.g. Nubia RedMagic 7s Pro).
+            // Cortex-X2 + A710 + A510 with active cooling can sustain aggressive
+            // dynarec settings. Mirrors PERFORMANCE plus a few SD8+G1-specific bumps.
+            envVars.put("BOX64_DYNAREC_SAFEFLAGS", "1");
+            envVars.put("BOX64_DYNAREC_FASTNAN", "1");
+            envVars.put("BOX64_DYNAREC_FASTROUND", "1");
+            envVars.put("BOX64_DYNAREC_X87DOUBLE", "0");
+            envVars.put("BOX64_DYNAREC_BIGBLOCK", "3");
+            envVars.put("BOX64_DYNAREC_STRONGMEM", "0");
+            envVars.put("BOX64_DYNAREC_FORWARD", "512");
+            envVars.put("BOX64_DYNAREC_CALLRET", "1");
+            envVars.put("BOX64_DYNAREC_WAIT", "1");
+            envVars.put("BOX64_DYNAREC_NATIVEFLAGS", "1");
+            envVars.put("BOX64_DYNAREC_WEAKBARRIER", "2");
+            // box64 0.4.x: opportunistically enable bleeding-edge codepaths.
+            // Older box64 versions ignore unknown env vars.
+            envVars.put("BOX64_DYNAREC_BLEEDING_EDGE", "1");
+            envVars.put("BOX64_DYNAREC_BIGBLOCK_DETECT", "1");
+        }
         else if (id.startsWith(Box64Preset.CUSTOM)) {
             for (String[] preset : customPresetsIterator(context)) {
                 if (preset[0].equals(id)) {
@@ -88,6 +108,7 @@ public abstract class Box64PresetManager {
         presets.add(new Box64Preset(Box64Preset.CONSERVATIVE, context.getString(R.string.conservative)));
         presets.add(new Box64Preset(Box64Preset.INTERMEDIATE, context.getString(R.string.intermediate)));
         presets.add(new Box64Preset(Box64Preset.PERFORMANCE, context.getString(R.string.performance)));
+        presets.add(new Box64Preset(Box64Preset.REDMAGIC_8PG1, context.getString(R.string.redmagic_8pg1)));
         for (String[] preset : customPresetsIterator(context)) presets.add(new Box64Preset(preset[0], preset[1]));
         return presets;
     }

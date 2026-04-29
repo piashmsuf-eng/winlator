@@ -57,6 +57,51 @@ public abstract class AppUtils {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
+    /**
+     * Request the highest available refresh rate for the activity window so games
+     * can run at 90/120/144 Hz on devices that support it (e.g. RedMagic 7s Pro).
+     */
+    public static void enableHighRefreshRate(Activity activity) {
+        try {
+            Window window = activity.getWindow();
+            android.view.Display display = activity.getWindowManager().getDefaultDisplay();
+            android.view.Display.Mode currentMode = display.getMode();
+            android.view.Display.Mode bestMode = currentMode;
+            for (android.view.Display.Mode m : display.getSupportedModes()) {
+                if (m.getPhysicalWidth() == currentMode.getPhysicalWidth()
+                        && m.getPhysicalHeight() == currentMode.getPhysicalHeight()
+                        && m.getRefreshRate() > bestMode.getRefreshRate()) {
+                    bestMode = m;
+                }
+            }
+            WindowManager.LayoutParams lp = window.getAttributes();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                lp.preferredDisplayModeId = bestMode.getModeId();
+            }
+            lp.preferredRefreshRate = bestMode.getRefreshRate();
+            window.setAttributes(lp);
+        } catch (Throwable t) {
+            // Display API can throw on some odd OEM ROMs; never block app launch.
+        }
+    }
+
+    /**
+     * On devices that advertise FEATURE_SUSTAINED_PERFORMANCE_MODE (most Snapdragon
+     * gaming phones, including the RedMagic 7s Pro), this caps SoC clocks to a level
+     * the device can hold for long sessions, eliminating thermal-throttle drops.
+     */
+    public static void enableSustainedPerformanceMode(Activity activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+        try {
+            android.os.PowerManager pm = (android.os.PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+            if (pm != null && pm.isSustainedPerformanceModeSupported()) {
+                activity.getWindow().setSustainedPerformanceMode(true);
+            }
+        } catch (Throwable t) {
+            // Best effort.
+        }
+    }
+
     public static void restartActivity(Activity activity) {
         Intent intent = activity.getIntent();
         activity.finish();

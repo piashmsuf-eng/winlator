@@ -138,6 +138,12 @@ public class SettingsFragment extends Fragment {
         final CheckBox cbUseAndroidClipboardOnWine = view.findViewById(R.id.CBUseAndroidClipboardOnWine);
         cbUseAndroidClipboardOnWine.setChecked(preferences.getBoolean("use_android_clipboard_on_wine", false));
 
+        final CheckBox cbHighRefreshRate = view.findViewById(R.id.CBHighRefreshRate);
+        cbHighRefreshRate.setChecked(preferences.getBoolean("high_refresh_rate", true));
+
+        final CheckBox cbSustainedPerformanceMode = view.findViewById(R.id.CBSustainedPerformanceMode);
+        cbSustainedPerformanceMode.setChecked(preferences.getBoolean("sustained_performance_mode", true));
+
         final CheckBox cbEnableWineDebug = view.findViewById(R.id.CBEnableWineDebug);
         cbEnableWineDebug.setChecked(preferences.getBoolean("enable_wine_debug", false));
 
@@ -202,6 +208,8 @@ public class SettingsFragment extends Fragment {
             editor.putInt("preferred_input_api", sPreferredInputApi.getSelectedItemPosition());
             editor.putBoolean("open_android_browser_from_wine", cbOpenAndroidBrowserFromWine.isChecked());
             editor.putBoolean("use_android_clipboard_on_wine", cbUseAndroidClipboardOnWine.isChecked());
+            editor.putBoolean("high_refresh_rate", cbHighRefreshRate.isChecked());
+            editor.putBoolean("sustained_performance_mode", cbSustainedPerformanceMode.isChecked());
             putGamepadPlayerConfigs(view, editor);
 
             int newAppThemeId = rgAppTheme.getCheckedRadioButtonId();

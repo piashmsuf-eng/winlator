@@ -146,6 +146,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         final PreloaderDialog preloaderDialog = new PreloaderDialog(this);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (preferences.getBoolean("high_refresh_rate", true)) AppUtils.enableHighRefreshRate(this);
+        if (preferences.getBoolean("sustained_performance_mode", true)) AppUtils.enableSustainedPerformanceMode(this);
         boolean useAndroidClipboardOnWine = preferences.getBoolean("use_android_clipboard_on_wine", false);
         clipboardManager = useAndroidClipboardOnWine ? (ClipboardManager)getSystemService(CLIPBOARD_SERVICE) : null;
 

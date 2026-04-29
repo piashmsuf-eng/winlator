@@ -168,6 +168,14 @@
     <string name="conservative">Conservative</string>
     <string name="intermediate">Intermediate</string>
     <string name="performance">Performance</string>
+    <string name="redmagic_8pg1">RedMagic / SD 8+ Gen 1</string>
+    <string name="high_refresh_rate">High Refresh Rate (90/120 Hz)</string>
+    <string name="sustained_performance_mode">Sustained Performance Mode</string>
+    <string name="enable_dxvk_hud">DXVK HUD (FPS overlay)</string>
+    <string name="clone_container">Clone Container</string>
+    <string name="container_was_cloned">Container was cloned successfully</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="crash_dialog_title">Winlator crashed</string>
     <string name="preset">Preset</string>
     <string name="you_cannot_remove_this_preset">You cannot remove this preset</string>
     <string name="you_cannot_remove_this_component_version">You cannot remove this component version</string>
