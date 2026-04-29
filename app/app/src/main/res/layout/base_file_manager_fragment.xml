@@ -29,4 +29,16 @@
         android:src="@drawable/icon_paste"
         android:layout_margin="16dp"
         android:visibility="gone" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/BTLastPlayed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:tint="#ffffff"
+        android:src="@drawable/icon_run"
+        android:layout_margin="16dp"
+        android:layout_marginBottom="88dp"
+        android:visibility="gone"
+        android:contentDescription="@string/last_played" />
 </FrameLayout>

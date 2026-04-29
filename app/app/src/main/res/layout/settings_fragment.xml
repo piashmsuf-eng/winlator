@@ -308,6 +308,13 @@
                         android:layout_marginTop="8dp" />
 
                     <CheckBox
+                        android:id="@+id/CBShowPerfOverlay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/overlay_show"
+                        android:layout_marginTop="8dp" />
+
+                    <CheckBox
                         android:id="@+id/CBDynamicColors"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

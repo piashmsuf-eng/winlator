@@ -115,6 +115,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private Runnable editInputControlsCallback;
     private Shortcut shortcut;
     private long shortcutStartTimeMs = 0L;
+    private com.winlator.widget.PerfOverlayView perfOverlay;
     private String[] graphicsDriver = {GraphicsDrivers.DEFAULT_VULKAN_DRIVER, GraphicsDrivers.DEFAULT_OPENGL_DRIVER};
     private String audioDriver = Container.DEFAULT_AUDIO_DRIVER;
     private String dxwrapper = Container.DEFAULT_DXWRAPPER;
@@ -155,6 +156,20 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         drawerLayout = findViewById(R.id.DrawerLayout);
         drawerLayout.setOnApplyWindowInsetsListener((view, windowInsets) -> windowInsets.replaceSystemWindowInsets(0, 0, 0, 0));
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
+        if (preferences.getBoolean("show_perf_overlay", false)) {
+            FrameLayout overlayHost = findViewById(R.id.FLXServerDisplay);
+            if (overlayHost != null) {
+                perfOverlay = new com.winlator.widget.PerfOverlayView(this);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+                lp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
+                int margin = (int) (8 * getResources().getDisplayMetrics().density);
+                lp.setMargins(margin, margin, margin, margin);
+                overlayHost.addView(perfOverlay, lp);
+                perfOverlay.start();
+            }
+        }
 
         NavigationView navigationView = findViewById(R.id.NavigationView);
         ProcessHelper.removeAllDebugCallbacks();
@@ -345,6 +360,9 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     protected void onDestroy() {
         winHandler.stop();
         if (environment != null) environment.stopEnvironmentComponents();
+        if (perfOverlay != null) {
+            try { perfOverlay.stop(); } catch (Throwable ignored) {}
+        }
         if (shortcut != null && shortcutStartTimeMs > 0) {
             try {
                 long delta = System.currentTimeMillis() - shortcutStartTimeMs;
@@ -416,6 +434,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 enterPictureInPictureMode(pipParams);
                 drawerLayout.closeDrawers();
                 break;
+            case R.id.menu_item_screenshot:
+                takeScreenshot();
+                drawerLayout.closeDrawers();
+                break;
             case R.id.menu_item_logs:
                 debugDialog.show();
                 drawerLayout.closeDrawers();
@@ -432,6 +454,34 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
     public SharedPreferences getPreferences() {
         return preferences;
+    }
+
+    private void takeScreenshot() {
+        try {
+            android.view.View root = getWindow().getDecorView().getRootView();
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                Math.max(1, root.getWidth()), Math.max(1, root.getHeight()),
+                android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas c = new android.graphics.Canvas(bitmap);
+            root.draw(c);
+
+            java.io.File dir = new java.io.File(getExternalFilesDir(null), "screenshots");
+            if (!dir.isDirectory() && !dir.mkdirs()) {
+                AppUtils.showToast(this, R.string.screenshot_failed);
+                return;
+            }
+            String name = "winlator-" + new java.text.SimpleDateFormat("yyyyMMdd-HHmmss",
+                java.util.Locale.US).format(new java.util.Date()) + ".png";
+            java.io.File out = new java.io.File(dir, name);
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, fos);
+            }
+            android.media.MediaScannerConnection.scanFile(this,
+                new String[]{out.getAbsolutePath()}, new String[]{"image/png"}, null);
+            AppUtils.showToast(this, getString(R.string.screenshot_saved) + ": " + out.getName());
+        } catch (Throwable t) {
+            AppUtils.showToast(this, R.string.screenshot_failed);
+        }
     }
 
     private void exit() {
