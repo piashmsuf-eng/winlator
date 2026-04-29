@@ -306,6 +306,20 @@
                         android:layout_height="wrap_content"
                         android:text="@string/sustained_performance_mode"
                         android:layout_marginTop="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/CBDynamicColors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dynamic_colors"
+                        android:layout_marginTop="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/CBCheckForUpdates"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/check_for_updates"
+                        android:layout_marginTop="8dp" />
                 </LinearLayout>
 
                 <TextView

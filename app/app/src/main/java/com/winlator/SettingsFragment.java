@@ -144,6 +144,12 @@ public class SettingsFragment extends Fragment {
         final CheckBox cbSustainedPerformanceMode = view.findViewById(R.id.CBSustainedPerformanceMode);
         cbSustainedPerformanceMode.setChecked(preferences.getBoolean("sustained_performance_mode", true));
 
+        final CheckBox cbDynamicColors = view.findViewById(R.id.CBDynamicColors);
+        cbDynamicColors.setChecked(preferences.getBoolean("dynamic_colors", false));
+
+        final CheckBox cbCheckForUpdates = view.findViewById(R.id.CBCheckForUpdates);
+        cbCheckForUpdates.setChecked(preferences.getBoolean("check_for_updates", true));
+
         final CheckBox cbEnableWineDebug = view.findViewById(R.id.CBEnableWineDebug);
         cbEnableWineDebug.setChecked(preferences.getBoolean("enable_wine_debug", false));
 
@@ -210,6 +216,8 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("use_android_clipboard_on_wine", cbUseAndroidClipboardOnWine.isChecked());
             editor.putBoolean("high_refresh_rate", cbHighRefreshRate.isChecked());
             editor.putBoolean("sustained_performance_mode", cbSustainedPerformanceMode.isChecked());
+            editor.putBoolean("dynamic_colors", cbDynamicColors.isChecked());
+            editor.putBoolean("check_for_updates", cbCheckForUpdates.isChecked());
             putGamepadPlayerConfigs(view, editor);
 
             int newAppThemeId = rgAppTheme.getCheckedRadioButtonId();
