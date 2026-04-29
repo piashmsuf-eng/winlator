@@ -17,7 +17,8 @@ public abstract class DefaultVersion {
     public static final String CNC_DDRAW = "6.6";
     public static final String SOUNDFONT = "SONiVOX-EAS-GM-Wavetable";
     public static final String MINOR_DXVK = "1.10.3";
-    public static final String MAJOR_DXVK = "2.4.1";
+    // Bumped from 2.4.1 -> 2.6.1; ships shader-cache + d3d11 perf fixes.
+    public static final String MAJOR_DXVK = "2.6.1";
 
     public static String DXVK() {
         return DXVK(null);
