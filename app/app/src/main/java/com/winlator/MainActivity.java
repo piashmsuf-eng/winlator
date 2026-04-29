@@ -26,6 +26,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.navigation.NavigationView;
 import com.winlator.contentdialog.AboutDialog;
+import com.winlator.contentdialog.ChangelogDialog;
 import com.winlator.core.AppUtils;
 import com.winlator.core.Callback;
 import com.winlator.core.LocaleHelper;
@@ -39,11 +40,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static final byte OPEN_FILE_REQUEST_CODE = 2;
     public static final byte EDIT_INPUT_CONTROLS_REQUEST_CODE = 3;
     public static final byte OPEN_DIRECTORY_REQUEST_CODE = 4;
+    public static final byte CREATE_FILE_REQUEST_CODE = 5;
     private DrawerLayout drawerLayout;
     public final PreloaderDialog preloaderDialog = new PreloaderDialog(this);
     private boolean editInputControls = false;
     private int selectedProfileId;
     private Callback<Uri> openFileCallback;
+    private Callback<Uri> createFileCallback;
     private SharedPreferences preferences;
     private Fragment currentFragment;
 
@@ -121,6 +124,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 openFileCallback = null;
             }
         }
+        else if (requestCode == MainActivity.CREATE_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (createFileCallback != null && data != null) {
+                createFileCallback.call(data.getData());
+                createFileCallback = null;
+            }
+        }
     }
 
     @Override
@@ -149,6 +158,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void setOpenFileCallback(Callback<Uri> openFileCallback) {
         this.openFileCallback = openFileCallback;
+    }
+
+    public void setCreateFileCallback(Callback<Uri> createFileCallback) {
+        this.createFileCallback = createFileCallback;
     }
 
     private boolean requestAppPermissions() {
@@ -209,6 +222,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.menu_item_about:
                 (new AboutDialog(this)).show();
+                break;
+            case R.id.menu_item_changelog:
+                (new ChangelogDialog(this)).show();
                 break;
         }
         return true;

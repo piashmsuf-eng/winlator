@@ -40,6 +40,14 @@ public class ContainerManager {
         return containers;
     }
 
+    public File getHomeDir() {
+        return homeDir;
+    }
+
+    public void reload() {
+        loadContainers();
+    }
+
     private void loadContainers() {
         containers.clear();
         maxContainerId = 0;

@@ -192,6 +192,9 @@ public class SettingsFragment extends Fragment {
             ContentDialog.confirm(context, R.string.do_you_want_to_reinstall_system_files, () -> RootFSInstaller.install((MainActivity)getActivity()));
         });
 
+        view.findViewById(R.id.BTExportSettings).setOnClickListener((v) -> exportSettings());
+        view.findViewById(R.id.BTImportSettings).setOnClickListener((v) -> importSettings());
+
         loadGamepadPlayerConfigs(view);
 
         if (MainActivity.DEBUG_MODE) {
@@ -532,5 +535,59 @@ public class SettingsFragment extends Fragment {
             }
             else editor.remove(key);
         }
+    }
+
+    private void exportSettings() {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) return;
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, "winlator-settings.json");
+        activity.setCreateFileCallback((data) -> {
+            try (java.io.OutputStream out = activity.getContentResolver().openOutputStream(data)) {
+                org.json.JSONObject obj = new org.json.JSONObject(preferences.getAll());
+                out.write(obj.toString(2).getBytes("UTF-8"));
+                AppUtils.showToast(getContext(), R.string.settings_exported);
+            } catch (Throwable e) {
+                AppUtils.showToast(getContext(), R.string.export_failed);
+            }
+        });
+        activity.startActivityForResult(intent, MainActivity.CREATE_FILE_REQUEST_CODE);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void importSettings() {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) return;
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        activity.setOpenFileCallback((data) -> {
+            try (java.io.InputStream in = activity.getContentResolver().openInputStream(data)) {
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) baos.write(buf, 0, n);
+                org.json.JSONObject obj = new org.json.JSONObject(new String(baos.toByteArray(), "UTF-8"));
+                SharedPreferences.Editor editor = preferences.edit();
+                java.util.Iterator<String> keys = obj.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    Object val = obj.get(key);
+                    if (val instanceof Boolean) editor.putBoolean(key, (Boolean) val);
+                    else if (val instanceof Integer) editor.putInt(key, (Integer) val);
+                    else if (val instanceof Long) editor.putLong(key, (Long) val);
+                    else if (val instanceof Float) editor.putFloat(key, (Float) val);
+                    else if (val instanceof Double) editor.putFloat(key, ((Double) val).floatValue());
+                    else editor.putString(key, val.toString());
+                }
+                editor.apply();
+                AppUtils.showToast(getContext(), R.string.settings_imported);
+            } catch (Throwable e) {
+                AppUtils.showToast(getContext(), R.string.import_failed);
+            }
+        });
+        activity.startActivityForResult(intent, MainActivity.OPEN_FILE_REQUEST_CODE);
     }
 }

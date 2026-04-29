@@ -20,6 +20,8 @@ public class Shortcut {
     public final File file;
     public final File iconFile;
     public final String wmClass;
+    public final Bitmap cover;
+    public final File coverFile;
     private final JSONObject extraData = new JSONObject();
 
     public Shortcut(Container container, File file) {
@@ -32,6 +34,8 @@ public class Shortcut {
             this.icon = null;
             this.iconFile = null;
             this.wmClass = "";
+            this.cover = null;
+            this.coverFile = null;
         }
         else {
             String execArgs = "";
@@ -86,7 +90,41 @@ public class Shortcut {
 
             this.path = path;
             Container.checkObsoleteOrMissingProperties(extraData);
+
+            File coverDir = new File(container.getRootDir(), ".local/share/icons/custom/");
+            File coverFile = new File(coverDir, FileUtils.getBasename(file.getPath())+".png");
+            Bitmap cover = coverFile.isFile() ? BitmapFactory.decodeFile(coverFile.getPath()) : null;
+            this.cover = cover;
+            this.coverFile = coverFile;
         }
+    }
+
+    public File getCoverFile() {
+        return coverFile;
+    }
+
+    public long getLaunchCount() {
+        try { return Long.parseLong(getExtra("launchCount", "0")); } catch (NumberFormatException e) { return 0L; }
+    }
+
+    public long getTotalPlaytimeMs() {
+        try { return Long.parseLong(getExtra("totalPlaytimeMs", "0")); } catch (NumberFormatException e) { return 0L; }
+    }
+
+    public long getLastPlayed() {
+        try { return Long.parseLong(getExtra("lastPlayed", "0")); } catch (NumberFormatException e) { return 0L; }
+    }
+
+    public void recordLaunch() {
+        putExtra("launchCount", String.valueOf(getLaunchCount() + 1));
+        putExtra("lastPlayed", String.valueOf(System.currentTimeMillis()));
+        saveData();
+    }
+
+    public void recordPlaytimeDelta(long deltaMs) {
+        if (deltaMs <= 0) return;
+        putExtra("totalPlaytimeMs", String.valueOf(getTotalPlaytimeMs() + deltaMs));
+        saveData();
     }
 
     public String getExtra(String name) {

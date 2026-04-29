@@ -514,6 +514,29 @@
                             android:layout_gravity="center_horizontal"
                             android:text="@string/reinstall_system_files" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_horizontal"
+                        android:layout_marginTop="8dp">
+
+                        <Button
+                            style="@style/ButtonNeutral"
+                            android:id="@+id/BTExportSettings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/export_settings" />
+
+                        <Button
+                            style="@style/ButtonNeutral"
+                            android:id="@+id/BTImportSettings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/import_settings" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView

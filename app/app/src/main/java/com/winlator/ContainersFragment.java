@@ -30,6 +30,8 @@ import com.winlator.container.Container;
 import com.winlator.container.ContainerManager;
 import com.winlator.contentdialog.ContentDialog;
 import com.winlator.contentdialog.StorageInfoDialog;
+import com.winlator.core.AppUtils;
+import com.winlator.core.ContainerExporter;
 import com.winlator.core.PreloaderDialog;
 import com.winlator.xenvironment.RootFS;
 
@@ -111,7 +113,47 @@ public class ContainersFragment extends Fragment {
                 .commit();
             return true;
         }
+        else if (menuItem.getItemId() == R.id.menu_item_import_container) {
+            if (!RootFS.find(getContext()).isValid()) return false;
+            importContainer();
+            return true;
+        }
         else return super.onOptionsItemSelected(menuItem);
+    }
+
+    private void importContainer() {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) return;
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        activity.setOpenFileCallback((data) -> {
+            preloaderDialog.show(R.string.importing_container);
+            ContainerExporter.importAsync(getContext(), manager, data, success -> {
+                preloaderDialog.close();
+                AppUtils.showToast(getContext(), success ? R.string.settings_imported : R.string.import_failed);
+                loadContainersList();
+            });
+        });
+        activity.startActivityForResult(intent, MainActivity.OPEN_FILE_REQUEST_CODE);
+    }
+
+    private void exportContainer(Container container) {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) return;
+        String fileName = container.getName().replaceAll("[^a-zA-Z0-9._-]", "_") + ".tzst";
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/zstd");
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        activity.setCreateFileCallback((data) -> {
+            preloaderDialog.show(R.string.exporting_container);
+            ContainerExporter.exportAsync(getContext(), container, data, success -> {
+                preloaderDialog.close();
+                AppUtils.showToast(getContext(), success ? R.string.settings_exported : R.string.export_failed);
+            });
+        });
+        activity.startActivityForResult(intent, MainActivity.CREATE_FILE_REQUEST_CODE);
     }
 
     private class ContainersAdapter extends RecyclerView.Adapter<ContainersAdapter.ViewHolder> {
@@ -177,6 +219,9 @@ public class ContainersFragment extends Fragment {
                                 loadContainersList();
                             });
                         });
+                        break;
+                    case R.id.menu_item_export:
+                        exportContainer(container);
                         break;
                     case R.id.menu_item_remove:
                         ContentDialog.confirm(getContext(), R.string.do_you_want_to_remove_this_container, () -> {
