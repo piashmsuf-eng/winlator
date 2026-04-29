@@ -1,0 +1,76 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.winlator'
+        minSdkVersion 26
+        targetSdkVersion 28
+        versionCode 27
+        versionName "11.0"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            ndk {
+                abiFilters 'arm64-v8a'
+            }
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
+    packagingOptions {
+        // Several libraries are both shipped as prebuilt jniLibs and IMPORTED
+        // by CMake; AGP otherwise complains they appear in two inputs.
+        jniLibs {
+            pickFirsts += [
+                'lib/arm64-v8a/libc++_shared.so',
+                'lib/arm64-v8a/libFLAC.so',
+                'lib/arm64-v8a/libfluidsynth.so',
+                'lib/arm64-v8a/libfluidsynth-assetloader.so',
+                'lib/arm64-v8a/libgio-2.0.so',
+                'lib/arm64-v8a/libglib-2.0.so',
+                'lib/arm64-v8a/libgmodule-2.0.so',
+                'lib/arm64-v8a/libgobject-2.0.so',
+                'lib/arm64-v8a/libgthread-2.0.so',
+                'lib/arm64-v8a/libinstpatch-1.0.so',
+                'lib/arm64-v8a/liboboe.so',
+                'lib/arm64-v8a/libogg.so',
+                'lib/arm64-v8a/libopus.so',
+                'lib/arm64-v8a/libpcre.so',
+                'lib/arm64-v8a/libpcreposix.so',
+                'lib/arm64-v8a/libsndfile.so',
+                'lib/arm64-v8a/libvorbis.so',
+                'lib/arm64-v8a/libvorbisenc.so',
+                'lib/arm64-v8a/libvorbisfile.so',
+            ]
+        }
+    }
+
+    ndkVersion '24.0.8215888'
+
+    externalNativeBuild {
+        cmake {
+            version '3.22.1'
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.preference:preference:1.2.1'
+    // 1.9.0 is the highest material that still works with AGP 7.2.2 / appcompat 1.6.1
+    // and includes DynamicColors (Material You).
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.github.luben:zstd-jni:1.5.2-3@aar'
+    implementation 'org.tukaani:xz:1.7'
+    implementation 'org.apache.commons:commons-compress:1.20'
+}
