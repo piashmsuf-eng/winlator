@@ -30,9 +30,11 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install NDK 24 + CMake 3.22.1
+        shell: bash
         run: |
-          set -euxo pipefail
-          yes | sdkmanager --licenses >/dev/null
+          set -eux
+          # Accept licenses without tripping up `yes` on a broken pipe.
+          for _ in $(seq 1 30); do echo y; done | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "ndk;24.0.8215888" "cmake;3.22.1" \
                                "platforms;android-34" "build-tools;34.0.0"
 
