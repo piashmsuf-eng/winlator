@@ -114,6 +114,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private FrameRating frameRating;
     private Runnable editInputControlsCallback;
     private Shortcut shortcut;
+    private long shortcutStartTimeMs = 0L;
     private String[] graphicsDriver = {GraphicsDrivers.DEFAULT_VULKAN_DRIVER, GraphicsDrivers.DEFAULT_OPENGL_DRIVER};
     private String audioDriver = Container.DEFAULT_AUDIO_DRIVER;
     private String dxwrapper = Container.DEFAULT_DXWRAPPER;
@@ -193,7 +194,13 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             if (wineInfo != WineInfo.MAIN_WINE_INFO) rootFS.setWinePath(wineInfo.path);
 
             String shortcutPath = getIntent().getStringExtra("shortcut_path");
-            if (shortcutPath != null && !shortcutPath.isEmpty()) shortcut = new Shortcut(container, new File(shortcutPath));
+            if (shortcutPath != null && !shortcutPath.isEmpty()) {
+                shortcut = new Shortcut(container, new File(shortcutPath));
+                try {
+                    shortcut.recordLaunch();
+                    shortcutStartTimeMs = System.currentTimeMillis();
+                } catch (Throwable ignored) {}
+            }
 
             String graphicsDriver = container.getGraphicsDriver();
             audioDriver = container.getAudioDriver();
@@ -338,6 +345,12 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     protected void onDestroy() {
         winHandler.stop();
         if (environment != null) environment.stopEnvironmentComponents();
+        if (shortcut != null && shortcutStartTimeMs > 0) {
+            try {
+                long delta = System.currentTimeMillis() - shortcutStartTimeMs;
+                shortcut.recordPlaytimeDelta(delta);
+            } catch (Throwable ignored) {}
+        }
         super.onDestroy();
     }
 

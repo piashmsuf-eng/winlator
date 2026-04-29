@@ -1,17 +1,24 @@
 package com.winlator.contentdialog;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.winlator.ContainerDetailFragment;
+import com.winlator.MainActivity;
 import com.winlator.R;
 import com.winlator.ShortcutsFragment;
+import com.winlator.core.FileUtils;
+import com.winlator.core.ImageUtils;
 import com.winlator.box64.Box64PresetManager;
 import com.winlator.container.GraphicsDrivers;
 import com.winlator.container.Shortcut;
@@ -82,6 +89,26 @@ public class ShortcutSettingsDialog extends ContentDialog {
 
         final EditText etMaxFps = findViewById(R.id.ETMaxFps);
         etMaxFps.setText(shortcut.getExtra("maxFps", ""));
+
+        final Button btPickCover = findViewById(R.id.BTPickCover);
+        final Button btRemoveCover = findViewById(R.id.BTRemoveCover);
+        if (btPickCover != null) {
+            btPickCover.setOnClickListener((v) -> pickCoverImage());
+        }
+        if (btRemoveCover != null) {
+            btRemoveCover.setOnClickListener((v) -> {
+                File f = shortcut.getCoverFile();
+                if (f != null && f.isFile()) f.delete();
+                AppUtils.showToast(context, R.string.cover_removed);
+            });
+        }
+
+        final TextView tvPlaytime = findViewById(R.id.TVPlaytime);
+        if (tvPlaytime != null) {
+            long ms = shortcut.getTotalPlaytimeMs();
+            long count = shortcut.getLaunchCount();
+            tvPlaytime.setText(formatPlaytime(ms) + " · " + count + "×");
+        }
 
         final Spinner sBox64Preset = findViewById(R.id.SBox64Preset);
         Box64PresetManager.loadSpinner(sBox64Preset, shortcut.getExtra("box64Preset", shortcut.container.getBox64Preset()));
@@ -211,5 +238,34 @@ public class ShortcutSettingsDialog extends ContentDialog {
 
         spinner.setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, values));
         spinner.setSelection(selectedPosition, false);
+    }
+
+    private void pickCoverImage() {
+        final Context context = fragment.getContext();
+        if (!(context instanceof MainActivity)) return;
+        MainActivity activity = (MainActivity) context;
+
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        activity.setOpenFileCallback((data) -> {
+            Bitmap bitmap = ImageUtils.getBitmapFromUri(context, data, 1024);
+            if (bitmap == null) return;
+            File coverFile = shortcut.getCoverFile();
+            if (coverFile == null) return;
+            File parent = coverFile.getParentFile();
+            if (parent != null && !parent.isDirectory()) parent.mkdirs();
+            ImageUtils.save(bitmap, coverFile, Bitmap.CompressFormat.PNG, 95);
+            AppUtils.showToast(context, R.string.cover_saved);
+        });
+        activity.startActivityForResult(intent, MainActivity.OPEN_FILE_REQUEST_CODE);
+    }
+
+    private static String formatPlaytime(long ms) {
+        if (ms <= 0) return "0m";
+        long minutes = ms / 60000L;
+        if (minutes < 60) return minutes + "m";
+        long hours = minutes / 60L;
+        long remMin = minutes % 60L;
+        return hours + "h " + remMin + "m";
     }
 }

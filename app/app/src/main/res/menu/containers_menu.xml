@@ -14,4 +14,9 @@
         android:id="@+id/menu_item_add"
         android:title="@string/add"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_item_import_container"
+        android:title="@string/import_container"
+        app:showAsAction="never" />
 </menu>

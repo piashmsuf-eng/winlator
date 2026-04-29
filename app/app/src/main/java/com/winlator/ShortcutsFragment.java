@@ -134,6 +134,16 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
         return getString(R.string.shortcuts);
     }
 
+    private static String formatPlaytime(long ms) {
+        if (ms <= 0) return "0m";
+        long minutes = ms / 60000L;
+        if (minutes < 60) return minutes + "m";
+        long hours = minutes / 60L;
+        long remMin = minutes % 60L;
+        if (hours < 100) return hours + "h " + remMin + "m";
+        return hours + "h";
+    }
+
     private class ShortcutsAdapter extends RecyclerView.Adapter<ShortcutsAdapter.ViewHolder> {
         private final List<Shortcut> data;
 
@@ -169,14 +179,26 @@ public class ShortcutsFragment extends BaseFileManagerFragment<Shortcut> {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             final Shortcut item = data.get(position);
 
-            if (item.icon == null) {
+            if (item.cover != null) {
+                holder.imageView.setImageBitmap(item.cover);
+            }
+            else if (item.icon == null) {
                 int iconResId = item.file.isDirectory() ? R.drawable.container_folder : R.drawable.container_file_link;
                 holder.imageView.setImageResource(iconResId);
             }
             else holder.imageView.setImageBitmap(item.icon);
 
             holder.title.setText(item.name);
-            holder.subtitle.setText(item.container.getName());
+
+            String subtitle = item.container.getName();
+            if (!item.file.isDirectory()) {
+                long playMs = item.getTotalPlaytimeMs();
+                long count = item.getLaunchCount();
+                if (count > 0) {
+                    subtitle += " · " + formatPlaytime(playMs) + " · " + count + "×";
+                }
+            }
+            holder.subtitle.setText(subtitle);
 
             if (item.file.isDirectory()) {
                 holder.runButton.setImageResource(R.drawable.icon_open);

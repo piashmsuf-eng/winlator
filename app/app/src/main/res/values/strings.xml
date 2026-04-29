@@ -185,6 +185,23 @@
     <string name="max_fps">Max FPS (0 = unlimited)</string>
     <string name="dxvk_hud">DXVK HUD</string>
     <string name="dxvk_hud_help">FPS, frametimes and GPU load overlay rendered by DXVK.</string>
+    <string name="cover_image">Cover image</string>
+    <string name="pick_image">Pick</string>
+    <string name="playtime">Playtime</string>
+    <string name="cover_saved">Cover saved</string>
+    <string name="cover_removed">Cover removed</string>
+    <string name="export_container">Export container</string>
+    <string name="import_container">Import container</string>
+    <string name="exporting_container">Exporting container…</string>
+    <string name="importing_container">Importing container…</string>
+    <string name="export_settings">Export settings</string>
+    <string name="import_settings">Import settings</string>
+    <string name="settings_exported">Settings exported</string>
+    <string name="settings_imported">Settings imported</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_failed">Import failed</string>
+    <string name="changelog">Changelog</string>
+    <string name="last_played">Last played</string>
     <string name="preset">Preset</string>
     <string name="you_cannot_remove_this_preset">You cannot remove this preset</string>
     <string name="you_cannot_remove_this_component_version">You cannot remove this component version</string>
