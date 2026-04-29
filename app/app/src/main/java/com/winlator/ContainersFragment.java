@@ -41,6 +41,7 @@ public class ContainersFragment extends Fragment {
     private TextView emptyTextView;
     private ContainerManager manager;
     private PreloaderDialog preloaderDialog;
+    private String searchQuery = "";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,14 +74,30 @@ public class ContainersFragment extends Fragment {
     }
 
     private void loadContainersList() {
-        ArrayList<Container> containers = manager.getContainers();
-        recyclerView.setAdapter(new ContainersAdapter(containers));
-        if (containers.isEmpty()) emptyTextView.setVisibility(View.VISIBLE);
+        ArrayList<Container> all = manager.getContainers();
+        ArrayList<Container> visible = new ArrayList<>();
+        String q = searchQuery == null ? "" : searchQuery.trim().toLowerCase(java.util.Locale.US);
+        for (Container c : all) {
+            if (q.isEmpty() || c.getName().toLowerCase(java.util.Locale.US).contains(q)) visible.add(c);
+        }
+        recyclerView.setAdapter(new ContainersAdapter(visible));
+        emptyTextView.setVisibility(visible.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.containers_menu, menu);
+        MenuItem search = menu.findItem(R.id.menu_item_search);
+        if (search != null) {
+            androidx.appcompat.widget.SearchView sv = (androidx.appcompat.widget.SearchView) search.getActionView();
+            if (sv != null) {
+                sv.setQueryHint(getString(R.string.search));
+                sv.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+                    @Override public boolean onQueryTextSubmit(String query) { searchQuery = query; loadContainersList(); return true; }
+                    @Override public boolean onQueryTextChange(String newText) { searchQuery = newText; loadContainersList(); return true; }
+                });
+            }
+        }
     }
 
     @Override
