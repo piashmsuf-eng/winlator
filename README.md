@@ -55,9 +55,19 @@ This fork adds the following extras over upstream Winlator 11.0:
   hold for the whole gaming session, reducing thermal-throttle drops on long sessions.
 - **Crash dialog with Copy-to-Clipboard** — replaces silent crashes with a stack-trace
   dialog so you can file useful bug reports.
+- **DXVK 2.6.1** as the bundled default (was 2.4.1) — shader-cache and d3d11 perf fixes.
+- **Material You / Dynamic Colors** opt-in — Android 12+ system color theme.
+- **Auto-update checker** — polls `piashmsuf-eng/winlator` GitHub releases once per day
+  and shows a non-blocking dialog when a newer tag is published.
+- **Search bar** on Containers and Shortcuts home screens for filtering long lists.
+- **Per-shortcut DXVK HUD** toggle (FPS / frametime / GPU load overlay).
+- **Per-shortcut Max FPS cap** (`DXVK_FRAME_RATE` + `VKD3D_FRAME_RATE`) for thermally
+  pinning long sessions to e.g. 60/90 Hz on a 120 Hz panel.
+- **Log viewer filter** — case-insensitive substring filter above the in-app log view.
 
-Both new toggles default to **on** and live under *Settings → Advanced*. The Box64 preset
-must be selected manually (per container or globally).
+Both refresh-rate and sustained-performance toggles default to **on** and live under
+*Settings → Advanced*. The Box64 preset must be selected manually (per container or
+globally). Material You / update-checker toggles are also under *Settings → Advanced*.
 
 # Useful Tips
 
